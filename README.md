@@ -15,9 +15,20 @@ python main.py
 
 `data.json`은 `main.py`와 같은 디렉터리에 있어야 하며, 경로는 `DATA_JSON_PATH` 상수로 지정되어 있습니다.
 
+**파일 구성**: 기능별로 모듈을 나눴습니다. 실행은 `main.py`만 하면 되지만, 아래 5개 파일이 전부 같은 폴더에 있어야 `import`가 성공합니다.
+
+| 파일 | 역할 |
+|---|---|
+| `core.py` | 데이터 구조(2D/1D), MAC 연산(2D/1D), 라벨 정규화, 점수 판정 |
+| `io_console.py` | 모드 1 콘솔 입력 + 검증 |
+| `json_mode.py` | 모드 2: data.json 로드, 스키마 검증, 케이스 판정, 결과 요약 |
+| `perf.py` | 성능 측정, 2D/1D 비교 (보너스 1) |
+| `patterns.py` | 패턴 생성기 (보너스 2) |
+| `main.py` | 진입점, 모드 1/2 실행 흐름 |
+
 ## 구현 요약
 
-- **데이터 구조**: n×n 패턴/필터를 파이썬 리스트의 리스트(list of list)로 표현하고, `create_grid` / `get_cell` / `set_cell`로 생성·조회·저장합니다.
+- **데이터 구조**: n×n 패턴/필터를 파이썬 리스트의 리스트(list of list)로 표현하고, `core.py`의 `create_grid` / `get_cell` / `set_cell`로 생성·조회·저장합니다.
 - **MAC 연산**: `mac_operation`이 이중 for문으로 `pattern[r][c] * filter[r][c]`를 모두 더해 유사도 점수를 계산합니다. NumPy 등 외부 라이브러리는 사용하지 않았습니다.
 - **라벨 정규화**: `normalize_label`이 `'+' / 'cross'` → `Cross`, `'x'` → `X`로 변환합니다. data.json의 `expected` 값과 필터 키(`cross`/`x`) 모두 이 함수를 거쳐 표준 라벨로 통일한 뒤 비교합니다.
 - **동점 처리 정책**: `judge_scores`는 `abs(score_a - score_b) < 1e-9`(EPSILON)이면 `UNDECIDED`를 반환합니다. 부동소수점 연산은 미세한 오차가 발생할 수 있으므로, `==` 대신 허용오차 기반 비교를 사용했습니다.
